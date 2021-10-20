@@ -1,0 +1,198 @@
+Data: 15/10/2021
+Título: Iniciando o projeto WineStore
+versão: v1.00
+
+Ações:
+
+1. Criação do diretório do projeto: D:\PYTHON\PROJECTS\WineStoreV1.00, e sua venv;
+    FILE > NEW PROJECT
+
+2. Instalação do django-3.2.8
+    pip install django
+
+3. Instalação dos pacotes: django-bootstrap4==1.1.0 django-stdimage==5.0.1
+    pip install django-bootstrap4==1.1.0
+    pip install django-stdimage==5.0.1
+    pip install mysqlclient
+    # pip install humanize
+
+4. Criação do arquivo requirements.txt
+    pip freeze requirements.txt
+
+5. Criação do projeto: WineStoreV1.00
+    django-admin startproject WineStoreV100 .
+
+6. Criação do App: core
+    django-admin startapp core
+
+7. Configurações no arquivo settings.py
+
+7.1. ALLOWED_HOSTS = ['*']
+
+7.2. INSTALLED_APPS
+    'core',
+    'bootstrap4',
+    'stdimage',
+
+7.3. TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': ['templates'],
+
+7.4. Banco de dados - MySQL
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'wine',
+        'USER': 'admin',
+        'PASSWORD': 'root',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+
+7.4. # Internationalization
+
+LANGUAGE_CODE = 'pt-br'
+
+TIME_ZONE = 'America/Sao_Paulo'
+
+7.5. # Static files (CSS, JavaScript, Images)
+
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+7.6. # Logout Redirection
+
+LOGOUT_REDIRECT_URL = 'index'
+
+7.7. Criação dos diretórios declarados no settings.py: templates, static (js, css, images) e media
+- core/templates
+- core/static
+- core/static/css
+- core/static/js
+- core/static/images
+- /media
+
+7.8. Criação dos arquivos:
+- core/static/css/styles.css
+- core/static/js/script.js
+
+7.9. Criação dos templates .html:
+- templates/base.html
+- templates/index.html
+- templates/vinho_del.html
+- templates/vinho_form.html
+
+
+8.0 Configuração do arquivo /urls.py:
+
+from django.contrib import admin
+from django.urls import path, include
+
+from django.conf.urls.static import static
+from django.conf import settings
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('core.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+9.0 Criação e configuração do arquivo core/urls.py:
+
+from django.urls import path
+from .views import IndexView, CreateVinhoView, UpdateVinhoView, DeleteVinhoView
+
+
+urlpatterns = [
+    path('', IndexView.as_view(), name='index'),
+    path('add/', CreateVinhoView.as_view(), name='add_produto'),
+    path('<int:pk>/update/', UpdateVinhoView.as_view(), name='upd_produto'),
+    path('<int:pk>/delete/', DeleteVinhoView.as_view(), name='del_produto'),
+]
+
+9.0. Criar as ClassBasedViews no arquivo core/views.py:
+
+from django.views.generic import ListView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+
+
+from .models import Vinho
+
+
+class IndexView(ListView):
+    models = Produto
+    template_name = 'index.html'
+    queryset = Produto.objects.all()
+    context_object_name = 'produtos'
+
+
+class CreateProdutoView(CreateView):
+    model = Produto
+    template_name = 'produto_form.html'
+    fields = ['nome', 'preco']
+    success_url = reverse_lazy('index')
+
+
+class UpdateProdutoView(UpdateView):
+    model = Produto
+    template_name = 'produto_form.html'
+    fields = ['nome', 'preco']
+    success_url = reverse_lazy('index')
+
+
+class DeleteProdutoView(DeleteView):
+    model = Produto
+    template_name = 'produto_del.html'
+    success_url = reverse_lazy('index')
+
+10.0 Criar o modelo Vinho em core/models.py:
+
+from django.db import models
+
+class Vinho(models.Model):
+    nome = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nome
+
+11.0 Criar o modelo Vinho no arquivo Admin.py:
+
+from django.contrib import admin
+
+from .models import Vinho
+
+
+@admin.register(Vinho)
+class VinhoAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'safra')
+
+12.0 Efetuar as migrações
+
+python manage.py makemigrations
+python manage.py migrate
+
+13.0 Criar o super usuário
+
+python manage.py createsuperuser
+
+14.0 Executar o app:
+
+python manage.py runserver
+
+15.0 Abrir a admin em 127.0.0.1:8000, logar e cadastrar novos itens na base de dados
+
+16.0 Adicionar, editar e excluir itens através da interface da app
+
+17.0 Migrar o models do BD Legado
+
+python manage.py inspectdb
+(saída no console, para verificação)
+
+python manage.py inspectdb > core/models.py
+
